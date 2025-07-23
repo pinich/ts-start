@@ -6,7 +6,6 @@ export async function main() {
     try {
         const container = await bootstrap(AppModule);
         const app = container.resolve(ApplicationService);
-        console.error('💪💪💪💪Running');
         await app.run();
         await app.shutdown();
     } catch (error) {

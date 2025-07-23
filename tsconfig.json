@@ -8,6 +8,9 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "strictPropertyInitialization": false,
-    "useDefineForClassFields": false
+    "useDefineForClassFields": false,
+    "sourceMap": true,
+    "inlineSourceMap": false,
+    "inlineSources": false
   }
 }

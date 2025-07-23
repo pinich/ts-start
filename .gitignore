@@ -91,7 +91,8 @@ tmp/
 temp/
 
 # Editor directories and files
-.vscode/
+# .vscode/ - Keep debug settings but ignore user settings
+.vscode/extensions.json
 .idea/
 *.swp
 *.swo
