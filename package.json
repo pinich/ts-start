@@ -1,5 +1,5 @@
 {
-  "name": "my-backend",
+  "name": "ts-start",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -8,7 +8,7 @@
     "build": "tsc"
   },
   "keywords": [],
-  "author": "",
+  "author": "Pini Cheyni",
   "license": "ISC",
   "description": "",
   "devDependencies": {
