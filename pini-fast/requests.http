@@ -1,14 +1,15 @@
 # Pini-Fast API - HTTP Requests Collection
-# Base URL: http://localhost:8080
-# 
+# Base URL: http://localhost:8088
+#
 # Instructions:
 # 1. Start the server: npm run dev
 # 2. Use VSCode REST Client extension to send these requests
 # 3. Update the @token variable after successful login
-# 4. Admin users need email ending with @admin.com
+# 4. Admin users are managed through the role-based system
+# 5. Default admin: admin@company.com / ChangeThisPassword123!
 
 @baseUrl = http://localhost:8088
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImltMXk2d2pkeWc5bWRuN2dib3oiLCJlbWFpbCI6InBAcC5jb20iLCJpYXQiOjE3NTM3MTMwNjEsImV4cCI6MTc1Mzc5OTQ2MX0.OWSS2u-3DGaAl3xSvMa5k8BfhQLS0LK4fTsYZF2VRt8
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjBhbGt5bzZhMXI3Ym1kbjkzbDd4IiwiZW1haWwiOiJhZG1pbkBjb21wYW55LmNvbSIsInJvbGVzIjpbImFkbWluIl0sImlhdCI6MTc1MzcxODMxMSwiZXhwIjoxNzUzODA0NzExfQ.YYv2kiJI_wrtroRBegbHw9Bob6aScMyMxcnLceg0dWU
 
 ### ============================================================================
 ### HEALTH CHECK
@@ -21,46 +22,46 @@ GET {{baseUrl}}/health
 ### AUTHENTICATION ROUTES
 ### ============================================================================
 
-### Register a new user
+### Register a new user (gets default "user" role)
 POST {{baseUrl}}/api/auth/register
 Content-Type: application/json
 
 {
-  "email": "a@a.com",
-  "username": "aaa",
+  "email": "user@test.com",
   "firstName": "John",
   "lastName": "Doe",
-  "password": "123456"
+  "password": "password123"
 }
 
-### Register an admin user
+### Register user with admin role (requires admin token)
 POST {{baseUrl}}/api/auth/register
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
-  "email": "p@p.com",
-  "username": "ppp",
-  "firstName": "Admin",
-  "lastName": "User",
-  "password": "123456"
+  "email": "newadmin@test.com",
+  "firstName": "New",
+  "lastName": "Admin",
+  "password": "password123",
+  "roles": ["admin"]
 }
 
-### Login user
+### Login regular user
 POST {{baseUrl}}/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "a@a.com",
-  "password": "123456"
+  "email": "user@test.com",
+  "password": "password123"
 }
 
-### Login admin
+### Login admin (default bootstrap admin)
 POST {{baseUrl}}/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "p@p.com",
-  "password": "123456"
+  "email": "admin@company.com",
+  "password": "ChangeThisPassword123!"
 }
 
 ### Get current user profile
@@ -83,7 +84,7 @@ Authorization: Bearer {{token}}
 GET {{baseUrl}}/api/users
 
 ### Get user by ID (public)
-GET {{baseUrl}}/api/users/o1azlq0fjwmmdmx08yr
+GET {{baseUrl}}/api/users/0alkyo6a1r7bmdn93l7x
 
 ### Create user (admin only)
 POST {{baseUrl}}/api/users
@@ -91,11 +92,10 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "email": "p@p.com",
-  "username": "p",
+  "email": "newuser@test.com",
   "firstName": "Jane",
   "lastName": "Smith",
-  "password": "123456"
+  "password": "password123"
 }
 
 ### Update user (owner or admin)
@@ -125,6 +125,70 @@ Content-Type: application/json
   "firstName": "Updated First Name",
   "lastName": "Updated Last Name"
 }
+
+### Get user roles (admin only)
+GET {{baseUrl}}/api/users/USER_ID_HERE/roles
+Authorization: Bearer {{token}}
+
+### ============================================================================
+### ROLE MANAGEMENT ROUTES (ADMIN ONLY)
+### ============================================================================
+
+### Get all roles
+GET {{baseUrl}}/api/roles
+Authorization: Bearer {{token}}
+
+### Get role by ID
+GET {{baseUrl}}/api/roles/ROLE_ID_HERE
+Authorization: Bearer {{token}}
+
+### Create new role
+POST {{baseUrl}}/api/roles
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "moderator",
+  "description": "Moderator with limited administrative access"
+}
+
+### Update role
+PUT {{baseUrl}}/api/roles/ROLE_ID_HERE
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "updated-role",
+  "description": "Updated role description"
+}
+
+### Delete role
+DELETE {{baseUrl}}/api/roles/ROLE_ID_HERE
+Authorization: Bearer {{token}}
+
+### Assign role to user
+POST {{baseUrl}}/api/roles/assign
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "userId": "USER_ID_HERE",
+  "roleId": "ROLE_ID_HERE"
+}
+
+### Remove role from user
+POST {{baseUrl}}/api/roles/remove
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "userId": "USER_ID_HERE",
+  "roleId": "ROLE_ID_HERE"
+}
+
+### Get users with specific role
+GET {{baseUrl}}/api/roles/ROLE_ID_HERE/users
+Authorization: Bearer {{token}}
 
 ### ============================================================================
 ### PRODUCT MANAGEMENT ROUTES
@@ -276,7 +340,6 @@ Content-Type: application/json
 
 {
   "email": "invalid-email",
-  "username": "ab",
   "password": "123"
 }
 
@@ -293,51 +356,70 @@ Content-Type: application/json
 ### WORKFLOW EXAMPLES
 ### ============================================================================
 
-### Workflow 1: Complete User Registration and Product Creation
-# 1. Register a new admin user (use admin email)
-# 2. Login to get JWT token
-# 3. Create products
-# 4. Upload product images
-# 5. Manage inventory
+### Workflow 1: Role-Based User Management
+# 1. Login as admin (admin@company.com / ChangeThisPassword123!)
+# 2. Create roles via POST /api/roles
+# 3. Register users via POST /api/auth/register
+# 4. Assign roles via POST /api/roles/assign
+# 5. Manage user permissions
 
-### Workflow 2: User File Upload and Management
+### Workflow 2: Complete Product Management
+# 1. Login as admin to get JWT token
+# 2. Create products via POST /api/products
+# 3. Upload product images via POST /api/files/upload
+# 4. Update inventory via PATCH /api/products/:id/stock
+# 5. Manage product lifecycle
+
+### Workflow 3: User File Upload and Management
 # 1. Register/Login user
-# 2. Upload files
-# 3. Get file metadata
-# 4. Download files
-# 5. Update file info
-# 6. Delete files
+# 2. Upload files via POST /api/files/upload
+# 3. Get file metadata via GET /api/files/:id
+# 4. Download files via GET /api/files/:id/download
+# 5. Update/delete files
 
-### Workflow 3: Admin Operations
+### Workflow 4: Admin Operations
 # 1. Login as admin
-# 2. View all users
-# 3. Create/manage products
-# 4. View file statistics
-# 5. Manage all files
+# 2. View all users and their roles
+# 3. Create/manage roles and permissions
+# 4. View file statistics via GET /api/files/stats/overview
+# 5. Manage all files via GET /api/files/admin/all
 
 ### ============================================================================
 ### NOTES
 ### ============================================================================
 
-# Authentication:
-# - JWT tokens expire in 24 hours (configurable)
-# - Admin users must have emails ending with @admin.com
-# - Some endpoints are public, others require authentication
+# Authentication & Authorization:
+# - JWT tokens expire in 24 hours (configurable via JWT_EXPIRES_IN)
+# - Role-based access control with database-stored roles
+# - Default admin user: admin@company.com / ChangeThisPassword123!
+# - Default roles: admin, user, moderator
+# - Admin privileges required for role management
+
+# Role System:
+# - Flexible role system supporting unlimited custom roles
+# - Role assignments tracked with audit trail (who assigned, when)
+# - Users can have multiple roles
+# - Role-based middleware protects admin endpoints
 
 # File Uploads:
 # - Supported file types: jpg, jpeg, png, gif, pdf, doc, docx, txt (configurable)
-# - Maximum file size: 10MB (configurable)
-# - Files stored in ../persistent/uploads/ directory
+# - Maximum file size: 10MB (configurable via MAX_FILE_SIZE)
+# - Files stored in ./data/uploads/ directory
 
 # Database:
-# - SQLite database stored in ../persistent/database.sqlite
+# - SQLite database stored in ./data/database.sqlite
+# - Schema includes: users, roles, user_roles tables
+# - Foreign key relationships with cascading deletes
 # - All data persists between server restarts
 
 # Configuration:
-# - Check ConfigService for environment variables
-# - Default values provided for development
+# - Environment variables loaded from .env file
+# - sample.env provided with all required variables
+# - VS Code debugging fully supported
+# - Check ConfigService for all configuration options
 
 # Development:
-# - Server runs on http://localhost:8080 by default
+# - Server runs on http://localhost:8088 by default
 # - Use npm run dev for development with hot reload
 # - Use VSCode REST Client extension for testing these requests
+# - Dynamic route listing displays all available endpoints on startup
