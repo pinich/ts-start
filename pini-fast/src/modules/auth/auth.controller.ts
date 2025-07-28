@@ -51,13 +51,16 @@ export class AuthController implements IController {
     reply.send(response);
   }
 
-  private async register(request: FastifyRequest, reply: FastifyReply) {
+  private async register(request: AuthenticatedRequest, reply: FastifyReply) {
     if (!validateRegisterDto(request.body as any)) {
       throw new ValidationError('Invalid registration data provided');
     }
 
     const registerDto = request.body as RegisterDto;
-    const authResponse = await this.authService.register(registerDto);
+    
+    // Pass the requesting user ID if authenticated (for role assignment)
+    const requestingUserId = request.user?.id;
+    const authResponse = await this.authService.register(registerDto, requestingUserId);
     
     const response = new SuccessResponse(authResponse, 'Registration successful', 201);
     reply.status(201).send(response);

@@ -1,6 +1,7 @@
 import { Injectable } from 'nject-ts';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import { UserService } from '../user/user.service';
+import { RoleService } from '../role/role.service';
 import { ConfigService } from '../../core/services/config.service';
 import { LoggerService } from '../../core/services/logger.service';
 import { LoginDto } from './dto/login.dto';
@@ -20,6 +21,7 @@ export interface AuthResponse {
 export class AuthService {
   constructor(
     private userService: UserService,
+    private roleService: RoleService,
     private configService: ConfigService,
     private logger: LoggerService
   ) {}
@@ -50,11 +52,14 @@ export class AuthService {
     // Update last login
     await this.userService.updateLastLogin(user.id);
 
-    // Generate JWT token
-    const accessToken = this.generateAccessToken(user);
+    // Get user roles
+    const userRoles = await this.roleService.getUserRoles(user.id);
+
+    // Generate JWT token with roles
+    const accessToken = this.generateAccessToken(user, userRoles);
     const publicUser = await this.userService.findById(user.id);
 
-    this.logger.info(`User logged in successfully: ${user.email}`);
+    this.logger.info(`User logged in successfully: ${user.email} with roles: ${userRoles.map(r => r.name).join(', ')}`);
 
     return {
       user: publicUser!,
@@ -64,25 +69,53 @@ export class AuthService {
     };
   }
 
-  async register(registerDto: RegisterDto): Promise<AuthResponse> {
+  async register(registerDto: RegisterDto, requestingUserId?: string): Promise<AuthResponse> {
+    // Check if roles are being assigned and if user has admin privileges
+    if (registerDto.roles && registerDto.roles.length > 0) {
+      if (!requestingUserId) {
+        throw new UnauthorizedError('Authentication required to assign roles');
+      }
+      
+      const hasAdminRole = await this.roleService.userHasRole(requestingUserId, 'admin');
+      if (!hasAdminRole) {
+        throw new UnauthorizedError('Admin privileges required to assign roles');
+      }
+    }
+
     // Create user
     const newUser = await this.userService.create({
       email: registerDto.email,
-      username: registerDto.username,
       firstName: registerDto.firstName,
       lastName: registerDto.lastName,
       password: registerDto.password,
     });
 
-    // Generate JWT token
+    // Assign roles if provided, otherwise assign default role
+    const rolesToAssign = registerDto.roles && registerDto.roles.length > 0
+      ? registerDto.roles
+      : [this.configService.get('defaultUserRole')];
+
+    for (const roleName of rolesToAssign) {
+      const role = await this.roleService.findRoleByName(roleName.toLowerCase());
+      if (!role) {
+        this.logger.warn(`Role '${roleName}' not found, skipping assignment for user: ${newUser.email}`);
+        continue;
+      }
+      
+      const assignerId = requestingUserId || newUser.id; // Self-assign for default role
+      await this.roleService.assignRoleToUser(newUser.id, role.id, assignerId);
+    }
+
+    // Generate JWT token with roles
     const user = await this.userService.findByEmail(newUser.email);
     if (!user) {
       throw new Error('Failed to retrieve created user');
     }
 
-    const accessToken = this.generateAccessToken(user);
+    const userRoles = await this.roleService.getUserRoles(newUser.id);
+    const accessToken = this.generateAccessToken(user, userRoles);
 
-    this.logger.info(`User registered and logged in: ${user.email}`);
+    this.logger.info(`User registered and logged in: ${user.email} with roles: ${userRoles.map(r => r.name).join(', ')}`);
 
     return {
       user: newUser,
@@ -101,6 +134,12 @@ export class AuthService {
       const user = await this.userService.findByEmail(decoded.email);
       if (!user || !user.isActive) {
         throw new UnauthorizedError('Invalid token');
+      }
+
+      // Refresh roles in token if they're missing (for backward compatibility)
+      if (!decoded.roles) {
+        const userRoles = await this.roleService.getUserRoles(user.id);
+        decoded.roles = userRoles.map(role => role.name);
       }
 
       return decoded;
@@ -123,10 +162,12 @@ export class AuthService {
       throw new UnauthorizedError('User not found');
     }
 
-    const accessToken = this.generateAccessToken(user);
+    // Get fresh user roles
+    const userRoles = await this.roleService.getUserRoles(user.id);
+    const accessToken = this.generateAccessToken(user, userRoles);
     const publicUser = await this.userService.findById(user.id);
 
-    this.logger.info(`Token refreshed for user: ${user.email}`);
+    this.logger.info(`Token refreshed for user: ${user.email} with roles: ${userRoles.map(r => r.name).join(', ')}`);
 
     return {
       user: publicUser!,
@@ -145,10 +186,11 @@ export class AuthService {
     }
   }
 
-  private generateAccessToken(user: any): string {
+  private generateAccessToken(user: any, roles: any[]): string {
     const payload: JwtPayload = {
       id: user.id,
       email: user.email,
+      roles: roles.map(role => role.name),
     };
 
     const jwtSecret = this.configService.get('jwtSecret');

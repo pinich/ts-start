@@ -2,8 +2,10 @@ import { fastify, FastifyInstance } from 'fastify';
 import { Injectable } from "nject-ts";
 import { LoggerService } from './core/services/logger.service';
 import { ConfigService } from './core/services/config.service';
+import { DatabaseInitService } from './core/services/database-init.service';
 import { UserController } from './modules/user/user.controller';
 import { AuthController } from './modules/auth/auth.controller';
+import { RoleController } from './modules/role/role.controller';
 import { ProductController } from './modules/product/product.controller';
 import { FileController } from './modules/file/file.controller';
 import { createErrorHandler } from './core/middleware/error-handler.middleware';
@@ -15,8 +17,10 @@ export class AppService {
   constructor(
     private logger: LoggerService,
     private configService: ConfigService,
+    private databaseInitService: DatabaseInitService,
     private userController: UserController,
     private authController: AuthController,
+    private roleController: RoleController,
     private productController: ProductController,
     private fileController: FileController
   ) {
@@ -48,6 +52,7 @@ export class AppService {
     // Register all controller routes
     this.userController.registerRoutes(this.server);
     this.authController.registerRoutes(this.server);
+    this.roleController.registerRoutes(this.server);
     this.productController.registerRoutes(this.server);
     this.fileController.registerRoutes(this.server);
 
@@ -58,6 +63,9 @@ export class AppService {
     try {
       // Validate configuration
       this.configService.validate();
+
+      // Initialize database with roles and admin user
+      await this.databaseInitService.initialize();
 
       const port = this.configService.get('port');
       const host = this.configService.get('host');

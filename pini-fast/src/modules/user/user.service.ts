@@ -2,6 +2,7 @@ import { Injectable } from 'nject-ts';
 import bcrypt from 'bcryptjs';
 import { DatabaseService } from '../../core/services/database.service';
 import { LoggerService } from '../../core/services/logger.service';
+import { ConfigService } from '../../core/services/config.service';
 import { User, PublicUser } from './interfaces/user.interface';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -13,7 +14,8 @@ export class UserService {
 
   constructor(
     private databaseService: DatabaseService,
-    private logger: LoggerService
+    private logger: LoggerService,
+    private configService: ConfigService
   ) {}
 
   async findAll(): Promise<PublicUser[]> {
@@ -42,13 +44,6 @@ export class UserService {
     return await this.databaseService.findOne<User>(this.collection, { email });
   }
 
-  async findByUsername(username: string): Promise<User | null> {
-    if (!username) {
-      throw new ValidationError('Username is required');
-    }
-
-    return await this.databaseService.findOne<User>(this.collection, { username });
-  }
 
   async create(createUserDto: CreateUserDto): Promise<PublicUser> {
     // Check if user already exists
@@ -57,19 +52,13 @@ export class UserService {
       throw new ValidationError('User with this email already exists');
     }
 
-    const existingUserByUsername = await this.findByUsername(createUserDto.username);
-    if (existingUserByUsername) {
-      throw new ValidationError('User with this username already exists');
-    }
-
     // Hash password
-    const saltRounds = 12;
+    const saltRounds = this.configService.get('bcryptSaltRounds');
     const passwordHash = await bcrypt.hash(createUserDto.password, saltRounds);
 
     // Create user data
     const userData: Partial<User> = {
       email: createUserDto.email.toLowerCase(),
-      username: createUserDto.username,
       firstName: createUserDto.firstName,
       lastName: createUserDto.lastName,
       passwordHash,
@@ -100,27 +89,18 @@ export class UserService {
       }
     }
 
-    // Check for username conflicts (if username is being updated)
-    if (updateUserDto.username && updateUserDto.username !== existingUser.username) {
-      const usernameConflict = await this.findByUsername(updateUserDto.username);
-      if (usernameConflict && usernameConflict.id !== id) {
-        throw new ValidationError('User with this username already exists');
-      }
-    }
-
     // Prepare update data
     const updateData: Partial<User> = {};
     
     // Copy only the fields that exist in User interface
     if (updateUserDto.email !== undefined) updateData.email = updateUserDto.email;
-    if (updateUserDto.username !== undefined) updateData.username = updateUserDto.username;
     if (updateUserDto.firstName !== undefined) updateData.firstName = updateUserDto.firstName;
     if (updateUserDto.lastName !== undefined) updateData.lastName = updateUserDto.lastName;
     if (updateUserDto.isActive !== undefined) updateData.isActive = updateUserDto.isActive;
 
     // Hash password if provided
     if (updateUserDto.password) {
-      const saltRounds = 12;
+      const saltRounds = this.configService.get('bcryptSaltRounds');
       updateData.passwordHash = await bcrypt.hash(updateUserDto.password, saltRounds);
     }
 

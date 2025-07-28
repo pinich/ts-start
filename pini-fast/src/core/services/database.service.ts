@@ -46,7 +46,6 @@ export class DatabaseService implements IDatabaseService {
           CREATE TABLE IF NOT EXISTS users (
             id TEXT PRIMARY KEY,
             email TEXT UNIQUE NOT NULL,
-            username TEXT UNIQUE NOT NULL,
             firstName TEXT NOT NULL,
             lastName TEXT NOT NULL,
             passwordHash TEXT NOT NULL,
@@ -54,6 +53,36 @@ export class DatabaseService implements IDatabaseService {
             lastLogin TEXT,
             createdAt TEXT NOT NULL,
             updatedAt TEXT NOT NULL
+          )
+        `
+      },
+      {
+        name: 'roles',
+        schema: `
+          CREATE TABLE IF NOT EXISTS roles (
+            id TEXT PRIMARY KEY,
+            name TEXT UNIQUE NOT NULL,
+            description TEXT NOT NULL,
+            createdAt TEXT NOT NULL,
+            updatedAt TEXT NOT NULL
+          )
+        `
+      },
+      {
+        name: 'user_roles',
+        schema: `
+          CREATE TABLE IF NOT EXISTS user_roles (
+            id TEXT PRIMARY KEY,
+            userId TEXT NOT NULL,
+            roleId TEXT NOT NULL,
+            assignedAt TEXT NOT NULL,
+            assignedBy TEXT NOT NULL,
+            createdAt TEXT NOT NULL,
+            updatedAt TEXT NOT NULL,
+            FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (roleId) REFERENCES roles(id) ON DELETE CASCADE,
+            FOREIGN KEY (assignedBy) REFERENCES users(id),
+            UNIQUE(userId, roleId)
           )
         `
       },

@@ -6,6 +6,7 @@ import { UnauthorizedError } from './error-handler.middleware';
 export interface JwtPayload {
   id: string;
   email: string;
+  roles?: string[];
   iat?: number;
   exp?: number;
 }
@@ -89,12 +90,17 @@ export function requireRoles(roles: string[]) {
       throw new UnauthorizedError('Authentication required');
     }
 
-    // This is a simple role check - in a real app, you'd get roles from the database
-    // For now, we'll assume admin users have email ending with @p.com
-    const isAdmin = request.user.email.endsWith('@p.com');
+    if (!request.user.roles || request.user.roles.length === 0) {
+      throw new UnauthorizedError('No roles assigned to user');
+    }
+
+    // Check if user has any of the required roles
+    const hasRequiredRole = roles.some(role =>
+      request.user!.roles!.includes(role.toLowerCase())
+    );
     
-    if (roles.includes('admin') && !isAdmin) {
-      throw new UnauthorizedError('Admin access required');
+    if (!hasRequiredRole) {
+      throw new UnauthorizedError(`Access denied. Required roles: ${roles.join(', ')}`);
     }
   };
 }
