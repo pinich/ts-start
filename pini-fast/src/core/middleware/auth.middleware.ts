@@ -77,7 +77,7 @@ export function createOptionalAuthMiddleware(configService: ConfigService) {
 }
 
 export function requireAuth() {
-  return (request: AuthenticatedRequest, reply: FastifyReply) => {
+  return async (request: AuthenticatedRequest, reply: FastifyReply) => {
     if (!request.user) {
       throw new UnauthorizedError('Authentication required');
     }
@@ -85,7 +85,7 @@ export function requireAuth() {
 }
 
 export function requireRoles(roles: string[]) {
-  return (request: AuthenticatedRequest, reply: FastifyReply) => {
+  return async (request: AuthenticatedRequest, reply: FastifyReply) => {
     if (!request.user) {
       throw new UnauthorizedError('Authentication required');
     }

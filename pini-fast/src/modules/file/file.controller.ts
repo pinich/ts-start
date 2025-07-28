@@ -7,11 +7,13 @@ import { ValidationError } from '../../core/middleware/error-handler.middleware'
 import { createAuthMiddleware, AuthenticatedRequest, requireAuth, requireRoles } from '../../core/middleware/auth.middleware';
 import { ConfigService } from '../../core/services/config.service';
 import { asyncHandler } from '../../core/middleware/error-handler.middleware';
+import { RoleService } from '../role/role.service';
 
 @Injectable()
 export class FileController implements IController {
   constructor(
     private fileService: FileService,
+    private roleService: RoleService,
     private configService: ConfigService
   ) {}
 
@@ -109,7 +111,7 @@ export class FileController implements IController {
 
   private async getFiles(request: AuthenticatedRequest, reply: FastifyReply) {
     const userId = request.user!.id;
-    const isAdmin = request.user?.email.endsWith('@admin.com');
+    const isAdmin = await this.roleService.userHasRole(request.user!.id, 'admin');
     
     let files;
     if (isAdmin) {
@@ -125,7 +127,7 @@ export class FileController implements IController {
   private async getFileById(request: AuthenticatedRequest, reply: FastifyReply) {
     const { id } = (request.params as any);
     const userId = request.user!.id;
-    const isAdmin = request.user?.email.endsWith('@admin.com');
+    const isAdmin = await this.roleService.userHasRole(request.user!.id, 'admin');
     
     const file = await this.fileService.getFileById(id);
     if (!file) {
@@ -173,7 +175,7 @@ export class FileController implements IController {
   private async deleteFile(request: AuthenticatedRequest, reply: FastifyReply) {
     const { id } = (request.params as any);
     const userId = request.user!.id;
-    const isAdmin = request.user?.email.endsWith('@admin.com');
+    const isAdmin = await this.roleService.userHasRole(request.user!.id, 'admin');
     
     const deleted = await this.fileService.deleteFile(id, isAdmin ? undefined : userId);
     

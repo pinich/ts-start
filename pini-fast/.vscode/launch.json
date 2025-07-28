@@ -18,7 +18,8 @@
       ],
       "restart": true,
       "sourceMaps": true,
-      "outFiles": ["${workspaceFolder}/dist/**/*.js"]
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "preLaunchTask": "npm: build"
     },
     {
       "name": "Debug Built App",
@@ -33,7 +34,8 @@
       "console": "integratedTerminal",
       "skipFiles": [
         "<node_internals>/**"
-      ]
+      ],
+      "preLaunchTask": "npm: build"
     }
   ]
 }

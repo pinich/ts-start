@@ -136,12 +136,6 @@ export class AuthService {
         throw new UnauthorizedError('Invalid token');
       }
 
-      // Refresh roles in token if they're missing (for backward compatibility)
-      if (!decoded.roles) {
-        const userRoles = await this.roleService.getUserRoles(user.id);
-        decoded.roles = userRoles.map(role => role.name);
-      }
-
       return decoded;
     } catch (error) {
       if (error instanceof jwt.JsonWebTokenError) {

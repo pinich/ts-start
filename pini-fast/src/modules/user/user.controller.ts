@@ -2,6 +2,7 @@ import { Injectable } from 'nject-ts';
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { IController } from '../../core/interfaces/controller.interface';
 import { UserService } from './user.service';
+import { RoleService } from '../role/role.service';
 import { CreateUserDto, validateCreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto, validateUpdateUserDto } from './dto/update-user.dto';
 import { SuccessResponse, ErrorResponse } from '../../core/dto/base-response.dto';
@@ -14,6 +15,7 @@ import { asyncHandler } from '../../core/middleware/error-handler.middleware';
 export class UserController implements IController {
   constructor(
     private userService: UserService,
+    private roleService: RoleService,
     private configService: ConfigService
   ) {}
 
@@ -81,8 +83,8 @@ export class UserController implements IController {
     const { id } = (request.params as any);
     
     // Users can only update their own profile, unless they're admin
-    const isAdmin = request.user?.email.endsWith('@admin.com');
-    if (request.user?.id !== id && !isAdmin) {
+    const hasAdminRole = await this.roleService.userHasRole(request.user!.id, 'admin');
+    if (request.user?.id !== id && !hasAdminRole) {
       const response = new ErrorResponse('Forbidden: You can only update your own profile', 403);
       reply.status(403).send(response);
       return;
@@ -147,8 +149,8 @@ export class UserController implements IController {
 
     // Prevent regular users from changing their isActive status
     const updateData = { ...(request.body as UpdateUserDto) };
-    const isAdmin = request.user?.email.endsWith('@admin.com');
-    if (!isAdmin) {
+    const hasAdminRole = await this.roleService.userHasRole(request.user!.id, 'admin');
+    if (!hasAdminRole) {
       delete updateData.isActive;
     }
 

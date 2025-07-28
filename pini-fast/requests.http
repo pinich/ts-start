@@ -9,7 +9,7 @@
 # 5. Default admin: admin@company.com / ChangeThisPassword123!
 
 @baseUrl = http://localhost:8088
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjBhbGt5bzZhMXI3Ym1kbjkzbDd4IiwiZW1haWwiOiJhZG1pbkBjb21wYW55LmNvbSIsInJvbGVzIjpbImFkbWluIl0sImlhdCI6MTc1MzcxODMxMSwiZXhwIjoxNzUzODA0NzExfQ.YYv2kiJI_wrtroRBegbHw9Bob6aScMyMxcnLceg0dWU
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjBhbGt5bzZhMXI3Ym1kbjkzbDd4IiwiZW1haWwiOiJhZG1pbkBjb21wYW55LmNvbSIsInJvbGVzIjpbImFkbWluIl0sImlhdCI6MTc1MzcxOTQxMSwiZXhwIjoxNzUzODA1ODExfQ.LoEH8yjKvemtGnTYtnEye1PG-RRnlzv_f-e1KhmpdXQ
 
 ### ============================================================================
 ### HEALTH CHECK
@@ -21,6 +21,14 @@ GET {{baseUrl}}/health
 ### ============================================================================
 ### AUTHENTICATION ROUTES
 ### ============================================================================
+### Login admin (default bootstrap admin)
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@company.com",
+  "password": "ChangeThisPassword123!"
+}
 
 ### Register a new user (gets default "user" role)
 POST {{baseUrl}}/api/auth/register
@@ -55,14 +63,6 @@ Content-Type: application/json
   "password": "password123"
 }
 
-### Login admin (default bootstrap admin)
-POST {{baseUrl}}/api/auth/login
-Content-Type: application/json
-
-{
-  "email": "admin@company.com",
-  "password": "ChangeThisPassword123!"
-}
 
 ### Get current user profile
 GET {{baseUrl}}/api/auth/me
@@ -236,7 +236,7 @@ Content-Type: application/json
 }
 
 ### Update product (admin only)
-PUT {{baseUrl}}/api/products/replace-with-actual-product-id
+PUT {{baseUrl}}/api/products/k0mbkjd64pmdnbajn2
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
@@ -247,7 +247,7 @@ Content-Type: application/json
 }
 
 ### Update product stock (admin only)
-PATCH {{baseUrl}}/api/products/replace-with-actual-product-id/stock
+PATCH {{baseUrl}}/api/products/k0mbkjd64pmdnbajn2/stock
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
