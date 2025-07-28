@@ -19,7 +19,7 @@ export class ConfigService {
 
   constructor() {
     this.config = {
-      port: parseInt(process.env.PORT || '8080', 10),
+      port: parseInt(process.env.PORT || '8088', 10),
       host: process.env.HOST || '0.0.0.0',
       nodeEnv: process.env.NODE_ENV || 'development',
       logLevel: process.env.LOG_LEVEL || 'info',
