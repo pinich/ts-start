@@ -5,7 +5,7 @@ A TypeScript Node.js starter project with dependency injection, modular architec
 ## 🚀 Features
 
 - **TypeScript** - Full TypeScript support with strict type checking
-- **Dependency Injection** - Automatic DI using `@pinich/nject-ts` framework
+- **Dependency Injection** - Automatic DI using `nject-ts` package
 - **Modular Architecture** - Clean separation of concerns with modules
 - **VS Code Integration** - Complete debugging and development setup
 - **Source Maps** - Full debugging support in TypeScript source files
@@ -138,7 +138,7 @@ export class StepsModule { }
 1. Create the service file:
    ```typescript
    // src/my-feature/my-feature.service.ts
-   import { Injectable } from '@pinich/nject-ts';
+   import { Injectable } from 'nject-ts';
 
    @Injectable()
    export class MyFeatureService {
@@ -151,7 +151,7 @@ export class StepsModule { }
 2. Create the module:
    ```typescript
    // src/my-feature/my-feature.module.ts
-   import { Module } from '@pinich/nject-ts';
+   import { Module } from 'nject-ts';
    import { MyFeatureService } from './my-feature.service';
 
    @Module({
@@ -210,7 +210,7 @@ export class ApplicationService {
 ## 📚 Dependencies
 
 ### Runtime
-- `@pinich/nject-ts` - Dependency injection framework
+- `nject-ts` - Dependency injection framework
 - `reflect-metadata` - Metadata reflection for decorators
 
 ### Development

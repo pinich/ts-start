@@ -1,4 +1,4 @@
-import { Injectable } from '@pinich/nject-ts';
+import { Injectable } from 'nject-ts';
 import { StepsService } from '../steps/steps.service';
 
 

@@ -17,6 +17,6 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@pinich/nject-ts": "npm:@jsr/pinich__nject-ts@^0.1.0"
+    "nject-ts": "^1.0.2"
   }
 }

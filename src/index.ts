@@ -1,4 +1,4 @@
-import { bootstrap } from "@pinich/nject-ts";
+import { bootstrap } from "nject-ts";
 import { AppModule } from "./app.Module";
 import { ApplicationService } from "./services/application.service";
 
