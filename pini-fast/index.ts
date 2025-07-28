@@ -1,3 +1,7 @@
+// Load environment variables first, before any other imports
+import * as dotenv from 'dotenv';
+dotenv.config();
+
 import { bootstrap } from "nject-ts"
 import { AppModule } from "./src/app.module"
 import { AppService } from "./src/app.service";

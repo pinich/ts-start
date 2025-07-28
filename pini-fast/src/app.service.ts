@@ -59,6 +59,28 @@ export class AppService {
     this.logger.info('All routes registered');
   }
 
+  private logAvailableRoutes(): void {
+    this.logger.info('Available routes:');
+    
+    try {
+      // printRoutes() returns a string
+      const routesString = this.server.printRoutes();
+      
+      if (routesString && routesString.trim()) {
+        // Split by lines and log each route
+        routesString.trim().split('\n').forEach(line => {
+          if (line.trim()) {
+            this.logger.info(`${line.trim()}`);
+          }
+        });
+      } else {
+        this.logger.info('No routes found');
+      }
+    } catch (error) {
+      this.logger.warn('Could not enumerate routes:', error);
+    }
+  }
+
   async start(): Promise<void> {
     try {
       // Validate configuration
@@ -73,8 +95,7 @@ export class AppService {
       await this.server.listen({ port, host });
       
       this.logger.info(`🚀 Server started successfully on http://${host}:${port}`);
-      this.logger.info('Available routes:');
-      this.server.printRoutes();
+      this.logAvailableRoutes();
     } catch (error) {
       this.logger.error('Failed to start server', error);
       throw error;

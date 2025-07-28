@@ -2,35 +2,38 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Debug TypeScript App",
       "type": "node",
       "request": "launch",
-      "name": "Debug TypeScript",
       "program": "${workspaceFolder}/index.ts",
+      "cwd": "${workspaceFolder}",
       "runtimeArgs": ["-r", "ts-node/register"],
       "env": {
         "NODE_ENV": "development"
       },
-      "sourceMaps": true,
-      "outFiles": [
-        "${workspaceFolder}/dist/**/*.js"
-      ],
+      "envFile": "${workspaceFolder}/.env",
       "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen"
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "restart": true,
+      "sourceMaps": true,
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"]
     },
     {
+      "name": "Debug Built App",
       "type": "node",
       "request": "launch",
-      "name": "Debug with Nodemon",
-      "runtimeExecutable": "nodemon",
-      "program": "${workspaceFolder}/index.ts",
-      "restart": true,
-      "runtimeArgs": ["--exec", "ts-node"],
+      "program": "${workspaceFolder}/dist/index.js",
+      "cwd": "${workspaceFolder}",
       "env": {
         "NODE_ENV": "development"
       },
-      "sourceMaps": true,
+      "envFile": "${workspaceFolder}/.env",
       "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen"
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
     }
   ]
 }
