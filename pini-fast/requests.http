@@ -1,0 +1,343 @@
+# Pini-Fast API - HTTP Requests Collection
+# Base URL: http://localhost:8080
+# 
+# Instructions:
+# 1. Start the server: npm run dev
+# 2. Use VSCode REST Client extension to send these requests
+# 3. Update the @token variable after successful login
+# 4. Admin users need email ending with @admin.com
+
+@baseUrl = http://localhost:8080
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Im8xYXpscTBmandtbWRteDA4eXIiLCJlbWFpbCI6InBAcC5jb20iLCJpYXQiOjE3NTM2OTYzMzYsImV4cCI6MTc1Mzc4MjczNn0.XH0XCWPF32zsozS1Xwid9Z_gXHde8hC6mSm-zkgpMSM
+
+### ============================================================================
+### HEALTH CHECK
+### ============================================================================
+
+### Health Check
+GET {{baseUrl}}/health
+
+### ============================================================================
+### AUTHENTICATION ROUTES
+### ============================================================================
+
+### Register a new user
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "a@a.com",
+  "username": "aaa",
+  "firstName": "John",
+  "lastName": "Doe",
+  "password": "123456"
+}
+
+### Register an admin user
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "p@p.com",
+  "username": "ppp",
+  "firstName": "Admin",
+  "lastName": "User",
+  "password": "123456"
+}
+
+### Login user
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "a@a.com",
+  "password": "123456"
+}
+
+### Login admin
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "p@p.com",
+  "password": "123456"
+}
+
+### Get current user profile
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer {{token}}
+
+### Refresh token
+POST {{baseUrl}}/api/auth/refresh
+Authorization: Bearer {{token}}
+
+### Logout
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer {{token}}
+
+### ============================================================================
+### USER MANAGEMENT ROUTES
+### ============================================================================
+
+### Get all users (public)
+GET {{baseUrl}}/api/users
+
+### Get user by ID (public)
+GET {{baseUrl}}/api/users/o1azlq0fjwmmdmx08yr
+
+### Create user (admin only)
+POST {{baseUrl}}/api/users
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "email": "p@p.com",
+  "username": "p",
+  "firstName": "Jane",
+  "lastName": "Smith",
+  "password": "123456"
+}
+
+### Update user (owner or admin)
+PUT {{baseUrl}}/api/users/replace-with-actual-user-id
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "firstName": "Jane Updated",
+  "lastName": "Smith Updated"
+}
+
+### Delete user (admin only)
+DELETE {{baseUrl}}/api/users/replace-with-actual-user-id
+Authorization: Bearer {{token}}
+
+### Get own profile
+GET {{baseUrl}}/api/users/me/profile
+Authorization: Bearer {{token}}
+
+### Update own profile
+PUT {{baseUrl}}/api/users/me/profile
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "firstName": "Updated First Name",
+  "lastName": "Updated Last Name"
+}
+
+### ============================================================================
+### PRODUCT MANAGEMENT ROUTES
+### ============================================================================
+
+### Get all products (public)
+GET {{baseUrl}}/api/products
+
+### Get product by ID (public)
+GET {{baseUrl}}/api/products/replace-with-actual-product-id
+
+### Get products by category (public)
+GET {{baseUrl}}/api/products/category/electronics
+
+### Get in-stock products (public)
+GET {{baseUrl}}/api/products/stock/available
+
+### Create product (admin only)
+POST {{baseUrl}}/api/products
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Laptop Computer",
+  "description": "High-performance laptop for professional use",
+  "price": 1299.99,
+  "category": "electronics",
+  "sku": "LAP-001",
+  "stockQuantity": 25,
+  "imageUrl": "https://example.com/laptop.jpg"
+}
+
+### Create another product
+POST {{baseUrl}}/api/products
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Wireless Mouse",
+  "description": "Ergonomic wireless mouse with long battery life",
+  "price": 29.99,
+  "category": "electronics",
+  "sku": "MOU-001",
+  "stockQuantity": 100
+}
+
+### Update product (admin only)
+PUT {{baseUrl}}/api/products/replace-with-actual-product-id
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Updated Laptop Computer",
+  "price": 1199.99,
+  "stockQuantity": 30
+}
+
+### Update product stock (admin only)
+PATCH {{baseUrl}}/api/products/replace-with-actual-product-id/stock
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "quantity": 50
+}
+
+### Delete product (admin only)
+DELETE {{baseUrl}}/api/products/replace-with-actual-product-id
+Authorization: Bearer {{token}}
+
+### ============================================================================
+### FILE UPLOAD ROUTES
+### ============================================================================
+
+### Upload file (with authentication - tracks uploader)
+POST {{baseUrl}}/api/files/upload
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="test.txt"
+Content-Type: text/plain
+
+This is a test file content.
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Upload file (without authentication - anonymous upload)
+POST {{baseUrl}}/api/files/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="anonymous.txt"
+Content-Type: text/plain
+
+This is an anonymous upload.
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Download file (public)
+GET {{baseUrl}}/api/files/replace-with-actual-file-id/download
+
+### Get user's files (authenticated)
+GET {{baseUrl}}/api/files
+Authorization: Bearer {{token}}
+
+### Get file metadata (authenticated)
+GET {{baseUrl}}/api/files/replace-with-actual-file-id
+Authorization: Bearer {{token}}
+
+### Update file metadata (owner or admin)
+PUT {{baseUrl}}/api/files/replace-with-actual-file-id
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "originalName": "updated-filename.txt"
+}
+
+### Delete file (owner or admin)
+DELETE {{baseUrl}}/api/files/replace-with-actual-file-id
+Authorization: Bearer {{token}}
+
+### Get file statistics (admin only)
+GET {{baseUrl}}/api/files/stats/overview
+Authorization: Bearer {{token}}
+
+### Get all files (admin only)
+GET {{baseUrl}}/api/files/admin/all
+Authorization: Bearer {{token}}
+
+### ============================================================================
+### ERROR TESTING
+### ============================================================================
+
+### Test invalid login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "nonexistent@example.com",
+  "password": "wrongpassword"
+}
+
+### Test unauthorized access
+GET {{baseUrl}}/api/users/me/profile
+
+### Test invalid data
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "invalid-email",
+  "username": "ab",
+  "password": "123"
+}
+
+### Test admin-only endpoint without admin role
+POST {{baseUrl}}/api/products
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Test Product"
+}
+
+### ============================================================================
+### WORKFLOW EXAMPLES
+### ============================================================================
+
+### Workflow 1: Complete User Registration and Product Creation
+# 1. Register a new admin user (use admin email)
+# 2. Login to get JWT token
+# 3. Create products
+# 4. Upload product images
+# 5. Manage inventory
+
+### Workflow 2: User File Upload and Management
+# 1. Register/Login user
+# 2. Upload files
+# 3. Get file metadata
+# 4. Download files
+# 5. Update file info
+# 6. Delete files
+
+### Workflow 3: Admin Operations
+# 1. Login as admin
+# 2. View all users
+# 3. Create/manage products
+# 4. View file statistics
+# 5. Manage all files
+
+### ============================================================================
+### NOTES
+### ============================================================================
+
+# Authentication:
+# - JWT tokens expire in 24 hours (configurable)
+# - Admin users must have emails ending with @admin.com
+# - Some endpoints are public, others require authentication
+
+# File Uploads:
+# - Supported file types: jpg, jpeg, png, gif, pdf, doc, docx, txt (configurable)
+# - Maximum file size: 10MB (configurable)
+# - Files stored in ../persistent/uploads/ directory
+
+# Database:
+# - SQLite database stored in ../persistent/database.sqlite
+# - All data persists between server restarts
+
+# Configuration:
+# - Check ConfigService for environment variables
+# - Default values provided for development
+
+# Development:
+# - Server runs on http://localhost:8080 by default
+# - Use npm run dev for development with hot reload
+# - Use VSCode REST Client extension for testing these requests
